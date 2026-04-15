@@ -4,7 +4,6 @@ import (
 	"TestTask/pkg/logging"
 	"TestTask/pkg/utils"
 	"context"
-	"embed"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -21,13 +20,10 @@ type Client interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
-var embedMigrations embed.FS
-
 func Migration(ctx context.Context, logger *logging.Logger, pool *pgxpool.Pool) error {
 	db := stdlib.OpenDBFromPool(pool)
 	defer db.Close()
 
-	// goose.SetBaseFS(embedMigrations)
 	if err := goose.SetDialect("postgres"); err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -61,11 +57,11 @@ func NewClient(
 	if err != nil {
 		logger.Fatal("error do with tries postgresql")
 	}
-	logger.Debug("database connected")
+	logger.Info("database connect OK")
 
 	logger.Debug("migrations...")
 	err = Migration(ctx, logger, pool)
-	logger.Debug("migrations OK")
+	logger.Info("migrations OK")
 
 	return
 }

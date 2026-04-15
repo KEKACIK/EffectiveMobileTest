@@ -3,7 +3,9 @@ package logging
 import (
 	"log/slog"
 	"os"
-	"strings"
+
+	"github.com/lmittmann/tint"
+	"github.com/pressly/goose/v3"
 )
 
 type Logger struct {
@@ -15,22 +17,19 @@ func (l *Logger) Fatal(msg string) {
 	panic(msg)
 }
 
-func (l *Logger) DebugSQL(q string) {
-	q = strings.ReplaceAll(q, "\t", " ")
-	q = strings.ReplaceAll(q, "\n", "")
-	q = strings.TrimSpace(q)
-
-	l.Debug(q)
-}
-
 func NewLogger(debug bool) *Logger {
-	opts := &slog.HandlerOptions{
-		Level: slog.LevelInfo,
-	}
+	level := slog.LevelInfo
 	if debug {
-		opts.Level = slog.LevelDebug
+		level = slog.LevelDebug
 	}
-	return &Logger{
-		slog.New(slog.NewTextHandler(os.Stdout, opts)),
+	logger := &Logger{
+		slog.New(tint.NewHandler(os.Stdout, &tint.Options{
+			Level:      level,
+			TimeFormat: "15:04:05",
+		})),
 	}
+
+	goose.SetLogger(logger)
+
+	return logger
 }
