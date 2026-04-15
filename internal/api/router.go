@@ -2,7 +2,7 @@ package api
 
 import "net/http"
 
-func NewRoutes(mux *http.ServeMux, h *Handler) {
+func RegisterRoutes(mux *http.ServeMux, h *Handler) {
 	mux.HandleFunc("GET /subscriptions", h.List)
 	mux.HandleFunc("POST /subscriptions", h.Create)
 	mux.HandleFunc("GET /subscriptions/{id}", h.Get)
