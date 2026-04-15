@@ -11,9 +11,9 @@ type repository struct {
 	logger *logging.Logger
 }
 
-func (repo *repository) Create(ctx context.Context, sub *Subscription) (*Subscription, error) {
+func (repo *repository) Create(ctx context.Context, dto *CreateSubscriptionDTO) (*Subscription, error) {
 	q := `
-		INSERT subscriptions
+		INSERT INTO subscriptions
 			(name, price, user_id, start_at, end_at)
 		VALUES
 			($1, $2, $3, $4, $5)
@@ -21,12 +21,19 @@ func (repo *repository) Create(ctx context.Context, sub *Subscription) (*Subscri
 	`
 	repo.logger.DebugSQL(q)
 
-	err := repo.client.QueryRow(ctx, q, sub.Name, sub.Price, sub.UserID, sub.StartAt, sub.EndAt).Scan(&sub.ID)
+	sub := Subscription{
+		Name:    dto.Name,
+		Price:   dto.Price,
+		UserID:  dto.UserID,
+		StartAt: dto.StartAt,
+		EndAt:   dto.EndAt,
+	}
+	err := repo.client.QueryRow(ctx, q, dto.Name, dto.Price, dto.UserID, dto.StartAt, dto.EndAt).Scan(&sub.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	return sub, nil
+	return &sub, nil
 }
 
 func (repo *repository) GetList(ctx context.Context, is_deleted bool) ([]Subscription, error) {
@@ -98,7 +105,7 @@ func (repo *repository) Update(ctx context.Context, sub *Subscription) error {
 	return nil
 }
 
-func (repo *repository) Delete(ctx context.Context, sub *Subscription) error {
+func (repo *repository) Delete(ctx context.Context, id int) error {
 	// When deleting, change is_deleted to true
 	q := `
 		UPDATE subscriptions SET
@@ -108,7 +115,7 @@ func (repo *repository) Delete(ctx context.Context, sub *Subscription) error {
 	`
 	repo.logger.DebugSQL(q)
 
-	_, err := repo.client.Exec(ctx, q, sub.ID)
+	_, err := repo.client.Exec(ctx, q, id)
 	if err != nil {
 		return err
 	}
