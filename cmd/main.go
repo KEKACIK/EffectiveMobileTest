@@ -12,6 +12,7 @@ import (
 func main() {
 	cfg := config.NewConfig()
 	logger := logging.NewLogger(cfg.Debug)
+
 	client, err := postgresql.NewClient(context.TODO(), logger, 5, cfg.GetPostgresDsn())
 	if err != nil {
 		logger.Fatal(err.Error())
@@ -22,5 +23,6 @@ func main() {
 
 	api.RegisterRoutes(mux, handler)
 
+	logger.Info("API listen :80")
 	http.ListenAndServe(":80", mux)
 }
