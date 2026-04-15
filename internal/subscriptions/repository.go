@@ -13,50 +13,87 @@ type repository struct {
 
 func (repo *repository) Create(ctx context.Context, sub *Subscription) (*Subscription, error) {
 	q := `
-		CREATE subscriptions
-			(TODO)
+		INSERT subscriptions
+			(name, price, user_id, start_at, end_at)
 		VALUES
-			()
-
+			($1, $2, $3, $4, $5)
+		RETURNING id
 	`
 	repo.logger.DebugSQL(q)
 
-	return nil, nil
+	err := repo.client.QueryRow(ctx, q, sub.Name, sub.Price, sub.UserID, sub.StartAt, sub.EndAt).Scan(&sub.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return sub, nil
 }
 
 func (repo *repository) GetList(ctx context.Context, is_deleted bool) ([]Subscription, error) {
-
 	q := `
 		SELECT
-			TODO
+			id, name, price, user_id, start_at, end_at
 		FROM subscriptions WHERE
 			is_deleted=$1
 	`
 	repo.logger.DebugSQL(q)
 
-	return []Subscription{}, nil
+	rows, err := repo.client.Query(ctx, q, is_deleted)
+	if err != nil {
+		return nil, err
+	}
+
+	subs := make([]Subscription, 0)
+	for rows.Next() {
+		var sub Subscription
+
+		err = rows.Scan(&sub.ID, &sub.Name, &sub.Price, &sub.UserID, &sub.StartAt, &sub.EndAt)
+		if err != nil {
+			return nil, err
+		}
+
+		subs = append(subs, sub)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return subs, nil
 }
 
 func (repo *repository) Get(ctx context.Context, id string, is_deleted bool) (*Subscription, error) {
 	q := `
 		SELECT
-			TODO
-		FROM subsctriptions WHERE
+			id, name, price, user_id, start_at, end_at
+		FROM subscriptions WHERE
 			id=$1 AND is_deleted=$2
 	`
 	repo.logger.DebugSQL(q)
 
-	return nil, nil
+	sub := Subscription{}
+
+	err := repo.client.QueryRow(ctx, q, id, is_deleted).Scan(&sub.ID, &sub.Name, &sub.Price, &sub.UserID, &sub.StartAt, &sub.EndAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &sub, nil
 }
 
 func (repo *repository) Update(ctx context.Context, sub *Subscription) error {
 	q := `
-		UPDATE subsctriptions SET
-			TODO
+		UPDATE subscriptions SET
+			name=$1, price=$2, user_id=$3, start_at=$4, end_at=$5
 		WHERE
-			id=$1
+			id=$6
 	`
 	repo.logger.DebugSQL(q)
+
+	_, err := repo.client.Exec(ctx, q, sub.Name, sub.Price, sub.UserID, sub.StartAt, sub.EndAt, sub.ID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -64,12 +101,17 @@ func (repo *repository) Update(ctx context.Context, sub *Subscription) error {
 func (repo *repository) Delete(ctx context.Context, sub *Subscription) error {
 	// When deleting, change is_deleted to true
 	q := `
-		UPDATE subsctriptions SET
+		UPDATE subscriptions SET
 			is_deleted=true
 		WHERE
 			id=$1
 	`
 	repo.logger.DebugSQL(q)
+
+	_, err := repo.client.Exec(ctx, q, sub.ID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
