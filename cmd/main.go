@@ -12,7 +12,7 @@ import (
 func main() {
 	cfg := config.NewConfig()
 	logger := logging.NewLogger(cfg.Debug)
-	client, err := postgresql.NewClient(context.TODO(), 5, cfg.GetPostgresDsn())
+	client, err := postgresql.NewClient(context.TODO(), logger, 5, cfg.GetPostgresDsn())
 	if err != nil {
 		logger.Fatal(err.Error())
 	}

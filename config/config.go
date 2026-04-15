@@ -6,7 +6,7 @@ type Config struct {
 	Debug            bool
 	PostgresHost     string
 	PostgresPort     int
-	PostgresName     string
+	PostgresDB       string
 	PostgresUser     string
 	PostgresPassword string
 }
@@ -19,7 +19,7 @@ func NewConfig() *Config {
 		// DATABASE
 		PostgresHost:     getStrEnv("POSTGRES_HOST", ""),
 		PostgresPort:     getIntEnv("POSTGRES_PORT", 0),
-		PostgresName:     getStrEnv("POSTGRES_NAME", ""),
+		PostgresDB:       getStrEnv("POSTGRES_DB", ""),
 		PostgresUser:     getStrEnv("POSTGRES_USER", ""),
 		PostgresPassword: getStrEnv("POSTGRES_PASSWORD", ""),
 	}
@@ -28,7 +28,7 @@ func NewConfig() *Config {
 func (c *Config) GetPostgresDsn() string {
 	// Create Dsn for postgres connection
 	// format: postgresql://username:password@ip:port/database
-	url := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", c.PostgresUser, c.PostgresPassword, c.PostgresHost, c.PostgresPort, c.PostgresName)
+	url := fmt.Sprintf("postgresql://%s:%s@%s:%d/%s", c.PostgresUser, c.PostgresPassword, c.PostgresHost, c.PostgresPort, c.PostgresDB)
 
 	return url
 }
