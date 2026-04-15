@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE IF NOT EXISTS subscribers(
+CREATE TABLE IF NOT EXISTS subscriptions(
     id          SERIAL PRIMARY KEY,
     name        VARCHAR(256) NOT NULL,
     price       INT,
@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS subscribers(
 );
 
 -- +goose Down
-DROP TABLE IF EXISTS subscribers;
+DROP TABLE IF EXISTS subscriptions;
