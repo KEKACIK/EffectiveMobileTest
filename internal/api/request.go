@@ -1,6 +1,6 @@
 package api
 
-type SubscribeCreateRequest struct {
+type SubscriptionCreateRequest struct {
 	Name    string `json:"name"`
 	Price   int    `json:"price"`
 	UserID  string `json:"user_id"`
@@ -8,16 +8,16 @@ type SubscribeCreateRequest struct {
 	EndAt   string `json:"end_at"`
 }
 
-type SubscribeListRequest struct {
+type SubscriptionListRequest struct {
 	Page  int `json:"page"`
 	Limit int `json:"limit"`
 }
 
-type SubscribeGetRequest struct {
+type SubscriptionGetRequest struct {
 	ID int `json:"id"`
 }
 
-type SubscribeUpdateRequest struct {
+type SubscriptionUpdateRequest struct {
 	ID      int    `json:"id"`
 	Name    string `json:"name"`
 	Price   int    `json:"price"`
@@ -25,6 +25,6 @@ type SubscribeUpdateRequest struct {
 	StartAt string `json:"start_at"`
 }
 
-type SubscribeDeleteRequest struct {
+type SubscriptionDeleteRequest struct {
 	ID int `json:"id"`
 }

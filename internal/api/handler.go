@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	SubscribeNotFound error = errors.New("subscribe not found")
+	SubscriptionNotFound error = errors.New("Subscription not found")
 )
 
 type Handler struct {
@@ -20,14 +20,16 @@ type Handler struct {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var req SubscribeCreateRequest
+	w.Header().Set("Content-Type", "application/json")
+
+	var req SubscriptionCreateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
-	createDTO, err := SubscribeCreateValidation(&req)
+	dto, err := SubscriptionCreateValidation(&req)
 
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
@@ -36,22 +38,23 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	sub, err := subRepo.Create(context.TODO(), createDTO)
+	sub, err := subRepo.Create(context.TODO(), dto)
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusCreated)
 	json.NewEncoder(w).Encode(sub)
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	query := r.URL.Query()
-	req, err := SubscribeListValidation(query.Get("page"), query.Get("limit"))
+	req, err := SubscriptionListValidation(query.Get("page"), query.Get("limit"))
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
@@ -72,40 +75,78 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 		items = append(items, sub)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
 	json.NewEncoder(w).Encode(GetPagination(items, totalItems, req.Page, req.Limit))
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	req, err := SubscribeGetValidation(r.PathValue("id"))
+	w.Header().Set("Content-Type", "application/json")
+
+	req, err := SubscriptionGetValidation(r.PathValue("id"))
 	if err != nil {
-		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		return
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
 	sub, err := subRepo.Get(context.TODO(), req.ID, false)
 	if err != nil {
+		ErrorNotFoundResponse(w)
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusNotFound)
-		ErrorResponse(w, http.StatusNotFound, SubscribeNotFound)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
 	json.NewEncoder(w).Encode(sub)
+	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
 }
 
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+
+	// Получаем/проверяем ID
+	id, err := SubscriptionIdValidate(r.PathValue("id"))
+	if err != nil {
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
+		ErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	// Получаем данные
+	var req SubscriptionUpdateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
+		ErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	// Проверяем данные
+	dto, err := SubscriptionUpdateValidation(id, &req)
+	if err != nil {
+		ErrorResponse(w, http.StatusBadRequest, err)
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
+		return
+	}
+
+	subRepo := subscriptions.NewRepository(h.client, h.logger)
+	sub, err := subRepo.Update(context.TODO(), dto)
+	if err != nil {
+		ErrorNotFoundResponse(w)
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(sub)
+	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	req, err := SubscribeDeleteValidation(r.PathValue("id"))
+	w.Header().Set("Content-Type", "application/json")
+
+	id, err := SubscriptionIdValidate(r.PathValue("id"))
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
@@ -113,14 +154,13 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	err = subRepo.Delete(context.TODO(), req.ID)
+	err = subRepo.Delete(context.TODO(), id)
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{})

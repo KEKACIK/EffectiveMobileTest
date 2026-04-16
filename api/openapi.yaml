@@ -36,7 +36,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscribeResponse'
+                $ref: '#/components/schemas/SubscriptionResponse'
         '400':
           description: Ответ с ошибкой
           content:
@@ -65,7 +65,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscribesResponse'
+                $ref: '#/components/schemas/SubscriptionsResponse'
         '400':
           description: Ответ с ошибкой
           content:
@@ -88,7 +88,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscribeResponse'
+                $ref: '#/components/schemas/SubscriptionResponse'
         '400':
           description: Ответ с ошибкой
           content:
@@ -110,13 +110,44 @@ paths:
           required: true
           schema:
             type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Yandex Plus"
+                price:
+                  type: integer
+                  example: 400
+                user_id:
+                  type: string
+                  example: "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+                start_at:
+                  type: string
+                  format: string
+                  example: "07-2025"
       responses:
         '200':
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscribeResponse'
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '204':
+          description: Контент не найден
+        '400':
+          description: Ответ с ошибкой
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Объект не найден
+
     delete:
       tags: ["Подписки"]
       summary: Удалить запись о подписке
@@ -138,9 +169,9 @@ components:
         message:
           type: string
           description: Описание ошибки
-    SubscribeResponse:
-      $ref: '#/components/schemas/Subscribe'
-    SubscribesResponse:
+    SubscriptionResponse:
+      $ref: '#/components/schemas/Subscription'
+    SubscriptionsResponse:
       type: object
       properties:
         total:
@@ -158,9 +189,9 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/Subscribe'
+            $ref: '#/components/schemas/Subscription'
 
-    Subscribe:
+    Subscription:
       type: object
       properties:
         id:

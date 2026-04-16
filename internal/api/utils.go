@@ -35,9 +35,13 @@ func debug(l *logging.Logger, url, method, host string, code int) {
 	l.Debug(fmt.Sprintf("%s %s %s - %d", method, url, host, code))
 }
 
+func ErrorNotFoundResponse(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(map[string]string{})
+}
+
 func ErrorResponse(w http.ResponseWriter, code int, err error) {
 	// Универсальная функция возврата ошибки
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": err.Error(),
