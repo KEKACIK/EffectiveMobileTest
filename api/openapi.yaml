@@ -32,19 +32,122 @@ paths:
                   example: "07-2025"
       responses:
         '201':
-          description: Создано
+          description: Успешное создание
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscribeResponse'
         '400':
-          description: Ошибка валидации или неверный JSON
+          description: Ответ с ошибкой
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     get:
       tags: ["Подписки"]
       summary: Получить список подписок
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscribesResponse'
+        '400':
+          description: Ответ с ошибкой
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /subscriptions/{id}:
     get:
       tags: ["Подписки"]
       summary: Получить подписку
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscribeResponse'
+        '400':
+          description: Ответ с ошибкой
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Объект не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       tags: ["Подписки"]
       summary: Изменить запись подписки
     delete:
       tags: ["Подписки"]
       summary: Удалить запись о подписке
+
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Описание ошибки
+    SubscribeResponse:
+      $ref: '#/components/schemas/Subscribe'
+    SubscribesResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Всего объектов
+          example: 100
+        page:
+          type: integer
+          description: Текущая страница
+          example: 1
+        limit:
+          type: integer
+          description: Кол-во объектов на странице
+          example: 10
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subscribe'
+    Subscribe:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Yandex Plus"
+        price:
+          type: integer
+          example: 400
+        user_id:
+          type: string
+          example: "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+        start_at:
+          type: string
+          format: string
+          example: "07-2025"
