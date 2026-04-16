@@ -6,7 +6,12 @@ import (
 	"TestTask/pkg/postgresql"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
+)
+
+var (
+	SubscribeNotFound error = errors.New("subscribe not found")
 )
 
 type Handler struct {
@@ -15,14 +20,14 @@ type Handler struct {
 }
 
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-	var createReq SubscribeCreateRequest
-	if err := json.NewDecoder(r.Body).Decode(&createReq); err != nil {
+	var req SubscribeCreateRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
-	createDTO, err := SubscribeCreateValidation(&createReq)
+	createDTO, err := SubscribeCreateValidation(&req)
 
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
@@ -46,7 +51,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
-	listReq, err := SubscribeListValidation(query.Get("page"), query.Get("limit"))
+	req, err := SubscribeListValidation(query.Get("page"), query.Get("limit"))
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
@@ -70,19 +75,11 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
-	json.NewEncoder(w).Encode(GetPagination(items, totalItems, listReq.Page, listReq.Limit))
+	json.NewEncoder(w).Encode(GetPagination(items, totalItems, req.Page, req.Limit))
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusCreated)
-}
-
-func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusCreated)
-}
-
-func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	deleteReq, err := SubscribeDeleteValidation(r.PathValue("id"))
+	req, err := SubscribeGetValidation(r.PathValue("id"))
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
@@ -90,7 +87,33 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	err = subRepo.Delete(context.TODO(), deleteReq.ID)
+	sub, err := subRepo.Get(context.TODO(), req.ID, false)
+	if err != nil {
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusNotFound)
+		ErrorResponse(w, http.StatusNotFound, SubscribeNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
+	json.NewEncoder(w).Encode(sub)
+}
+
+func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
+	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusCreated)
+}
+
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
+	req, err := SubscribeDeleteValidation(r.PathValue("id"))
+	if err != nil {
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
+		ErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	subRepo := subscriptions.NewRepository(h.client, h.logger)
+	err = subRepo.Delete(context.TODO(), req.ID)
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)

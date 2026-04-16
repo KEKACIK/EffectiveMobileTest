@@ -69,7 +69,7 @@ func (repo *repository) GetList(ctx context.Context, is_deleted bool) ([]Subscri
 	return subs, nil
 }
 
-func (repo *repository) Get(ctx context.Context, id string, is_deleted bool) (*Subscription, error) {
+func (repo *repository) Get(ctx context.Context, id int, is_deleted bool) (*Subscription, error) {
 	q := `
 		SELECT
 			id, name, price, user_id, start_at, end_at
@@ -106,7 +106,7 @@ func (repo *repository) Update(ctx context.Context, sub *Subscription) error {
 }
 
 func (repo *repository) Delete(ctx context.Context, id int) error {
-	// When deleting, change is_deleted to true
+	// Для удаления изменяется параметр is_delete на True
 	q := `
 		UPDATE subscriptions SET
 			is_deleted=true

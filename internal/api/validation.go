@@ -12,6 +12,10 @@ import (
 )
 
 var (
+	SubscribeIDNotNumberErr error = errors.New("Invalid validation ID: Not number")
+)
+
+var (
 	SubscribeCreateUserIDErr  error = errors.New("Invalid validation UserID: UUID invalid")
 	SubscribeCreateStartAtErr error = errors.New("Invalid validation StartAt: invalid date. Excepted format \"MM-YYYY\"")
 )
@@ -73,18 +77,24 @@ func SubscribeListValidation(page, limit string) (*SubscribeListRequest, error) 
 	return &req, nil
 }
 
-var (
-	SubscribeDeleteIDNotNumberErr error = errors.New("Invalid validation ID: Not number")
-)
+func SubscribeGetValidation(id string) (*SubscribeGetRequest, error) {
+	req := &SubscribeGetRequest{}
+
+	reqID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, SubscribeIDNotNumberErr
+	}
+	req.ID = reqID
+
+	return req, nil
+}
 
 func SubscribeDeleteValidation(id string) (*SubscribeDeleteRequest, error) {
 	req := &SubscribeDeleteRequest{}
 
-	fmt.Println(id)
-
 	reqID, err := strconv.Atoi(id)
 	if err != nil {
-		return nil, SubscribeDeleteIDNotNumberErr
+		return nil, SubscribeIDNotNumberErr
 	}
 	req.ID = reqID
 
