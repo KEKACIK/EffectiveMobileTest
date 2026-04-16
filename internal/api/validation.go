@@ -72,3 +72,21 @@ func SubscribeListValidation(page, limit string) (*SubscribeListRequest, error) 
 
 	return &req, nil
 }
+
+var (
+	SubscribeDeleteIDNotNumberErr error = errors.New("Invalid validation ID: Not number")
+)
+
+func SubscribeDeleteValidation(id string) (*SubscribeDeleteRequest, error) {
+	req := &SubscribeDeleteRequest{}
+
+	fmt.Println(id)
+
+	reqID, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, SubscribeDeleteIDNotNumberErr
+	}
+	req.ID = reqID
+
+	return req, nil
+}

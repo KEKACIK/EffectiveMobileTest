@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Test Task Swagger
-  version: 1.0
+  version: 1.0.0
 servers:
   - url: http://localhost:80
 paths:
@@ -76,6 +76,12 @@ paths:
     get:
       tags: ["Подписки"]
       summary: Получить подписку
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: Успешный ответ
@@ -98,10 +104,31 @@ paths:
     put:
       tags: ["Подписки"]
       summary: Изменить запись подписки
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscribeResponse'
     delete:
       tags: ["Подписки"]
       summary: Удалить запись о подписке
-
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
 
 components:
   schemas:
@@ -132,6 +159,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Subscribe'
+
     Subscribe:
       type: object
       properties:

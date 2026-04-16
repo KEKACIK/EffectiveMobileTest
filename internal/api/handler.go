@@ -82,17 +82,15 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusCreated)
-
-	var deleteReq SubscribeDeleteRequest
-	if err := json.NewDecoder(r.Body).Decode(&deleteReq); err != nil {
+	deleteReq, err := SubscribeDeleteValidation(r.PathValue("id"))
+	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	err := subRepo.Delete(context.TODO(), deleteReq.ID)
+	err = subRepo.Delete(context.TODO(), deleteReq.ID)
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
@@ -102,9 +100,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]any{
-		"status": "ok",
-	})
+	json.NewEncoder(w).Encode(map[string]string{})
 }
 
 func NewHandler(
