@@ -22,14 +22,18 @@ paths:
                   example: "Yandex Plus"
                 price:
                   type: integer
-                  example: 400
+                  example: 399
                 user_id:
                   type: string
                   example: "60601fee-2bf1-4721-ae6f-7636e79a0cba"
-                start_at:
+                start_date:
                   type: string
                   format: string
-                  example: "07-2025"
+                  example: "01-2026"
+                end_date:
+                  type: string
+                  format: string
+                  example: "02-2026"
       responses:
         '201':
           description: Успешное создание
@@ -122,14 +126,10 @@ paths:
                   example: "Yandex Plus"
                 price:
                   type: integer
-                  example: 400
+                  example: 399
                 user_id:
                   type: string
                   example: "60601fee-2bf1-4721-ae6f-7636e79a0cba"
-                start_at:
-                  type: string
-                  format: string
-                  example: "07-2025"
       responses:
         '200':
           description: Успешный ответ
@@ -202,11 +202,15 @@ components:
           example: "Yandex Plus"
         price:
           type: integer
-          example: 400
+          example: 399
         user_id:
           type: string
           example: "60601fee-2bf1-4721-ae6f-7636e79a0cba"
-        start_at:
+        start_date:
           type: string
           format: string
-          example: "07-2025"
+          example: "01-2026"
+        end_date:
+          type: string
+          format: string
+          example: "02-2026"

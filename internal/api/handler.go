@@ -2,6 +2,7 @@ package api
 
 import (
 	"TestTask/internal/subscriptions"
+	"TestTask/internal/validation"
 	"TestTask/pkg/logging"
 	"TestTask/pkg/postgresql"
 	"context"
@@ -29,7 +30,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dto, err := SubscriptionCreateValidation(&req)
+	dtoList, err := SubscriptionCreateValidation(&req)
 
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
@@ -38,16 +39,22 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	sub, err := subRepo.Create(context.TODO(), dto)
-	if err != nil {
-		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
-		ErrorResponse(w, http.StatusBadRequest, err)
-		return
+
+	subList := make([]*subscriptions.Subscription, 0)
+	for _, dto := range dtoList {
+		sub, err := subRepo.Create(context.TODO(), dto)
+		if err != nil {
+			debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
+			ErrorResponse(w, http.StatusBadRequest, err)
+			return
+		}
+
+		subList = append(subList, sub)
 	}
 
 	w.WriteHeader(http.StatusCreated)
 	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusCreated)
-	json.NewEncoder(w).Encode(sub)
+	json.NewEncoder(w).Encode(subList)
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
@@ -83,15 +90,15 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	req, err := SubscriptionGetValidation(r.PathValue("id"))
+	id, err := validation.SubscriptionIdValidate(r.PathValue("id"))
 	if err != nil {
-		ErrorResponse(w, http.StatusBadRequest, err)
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
+		ErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	sub, err := subRepo.Get(context.TODO(), req.ID, false)
+	sub, err := subRepo.Get(context.TODO(), id, false)
 	if err != nil {
 		ErrorNotFoundResponse(w)
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusNotFound)
@@ -107,7 +114,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// Получаем/проверяем ID
-	id, err := SubscriptionIdValidate(r.PathValue("id"))
+	id, err := validation.SubscriptionIdValidate(r.PathValue("id"))
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
@@ -125,6 +132,11 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	// Проверяем данные
 	dto, err := SubscriptionUpdateValidation(id, &req)
 	if err != nil {
+		if err == SubscriptionUpdateEmptyErr {
+			ErrorResponse(w, http.StatusNoContent, err)
+			debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusNoContent)
+			return
+		}
 		ErrorResponse(w, http.StatusBadRequest, err)
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		return
@@ -146,7 +158,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	id, err := SubscriptionIdValidate(r.PathValue("id"))
+	id, err := validation.SubscriptionIdValidate(r.PathValue("id"))
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
