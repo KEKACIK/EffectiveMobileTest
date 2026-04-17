@@ -32,10 +32,12 @@ func GetPagination(
 }
 
 func debug(l *logging.Logger, url, method, host string, code int) {
+	// Выводим в консоль метод, ссылку и айпи запроса, а также код ответа
 	l.Debug(fmt.Sprintf("%s %s %s - %d", method, url, host, code))
 }
 
 func ErrorNotFoundResponse(w http.ResponseWriter) {
+	// Функция возврата ошибки: 404 Not Found
 	w.WriteHeader(http.StatusNotFound)
 	json.NewEncoder(w).Encode(map[string]string{})
 }

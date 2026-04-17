@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 )
 
 var (
@@ -113,15 +112,10 @@ func (repo *repository) Update(ctx context.Context, dto *SubscriptionUpdateDTO) 
 		args = append(args, dto.UserID)
 		params = append(params, fmt.Sprintf("user_id=$%d", len(args)))
 	}
-	if !dto.StartAt.Equal(time.Time{}) {
-		args = append(args, dto.StartAt)
-		params = append(params, fmt.Sprintf("start_at=$%d", len(args)))
-		args = append(args, dto.EndAt)
-		params = append(params, fmt.Sprintf("end_at=$%d", len(args)))
-	}
 	if len(args) == 0 {
 		return nil, DatabaseNotContentErr
 	}
+	params = append(params, "updated_at=CURRENT_TIMESTAMP")
 
 	args = append(args, dto.ID)
 	q := fmt.Sprintf(
@@ -149,7 +143,7 @@ func (repo *repository) Delete(ctx context.Context, id int) error {
 	// Для удаления изменяется параметр is_delete на True
 	q := `
 		UPDATE subscriptions SET
-			is_deleted=true
+			is_deleted=true, updated_at=CURRENT_TIMESTAMP
 		WHERE
 			id=$1
 	`
