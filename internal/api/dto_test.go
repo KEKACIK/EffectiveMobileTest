@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSubscriptionCreateValidation(t *testing.T) {
+func TestGetSubscriptionCreateDTO(t *testing.T) {
 	tests := []struct {
 		name   string
 		value  *SubscriptionCreateRequest
@@ -91,20 +91,20 @@ func TestSubscriptionCreateValidation(t *testing.T) {
 				EndAt:   "01-2026",
 			},
 			result: nil,
-			err:    SubscriptionCreateEndAtErr,
+			err:    SubscriptionIntervalErr,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := SubscriptionCreateValidation(tt.value)
+			result, err := GetSubscriptionCreateDTO(tt.value)
 			assert.Equal(t, tt.result, result)
 			assert.Equal(t, tt.err, err)
 		})
 	}
 }
 
-func TestSubscriptionListValidation(t *testing.T) {
+func TestGetSubscriptionListDTO(t *testing.T) {
 	tests := []struct {
 		name   string
 		page   string
@@ -137,13 +137,86 @@ func TestSubscriptionListValidation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := SubscriptionListValidation(tt.page, tt.limit)
+			result, err := GetSubscriptionListDTO(tt.page, tt.limit)
 			assert.Equal(t, tt.result, result)
 			assert.Equal(t, tt.err, err)
 		})
 	}
 }
-func TestSubscriptionUpdateValidation(t *testing.T) {
+
+func TestGetSubscriptionStatsDTO(t *testing.T) {
+	tests := []struct {
+		Name      string
+		name      string
+		userID    string
+		startDate string
+		stopDate  string
+		result    *subscriptions.SubscriptionStatDTO
+		err       error
+	}{
+		{
+			Name:      "Success 1",
+			name:      "Yandex Plus",
+			userID:    "9654cfa5-abfd-4e58-b5ec-712320d6142b",
+			startDate: "01-2026",
+			stopDate:  "02-2026",
+			result: &subscriptions.SubscriptionStatDTO{
+				Name:      "Yandex Plus",
+				UserID:    "9654cfa5-abfd-4e58-b5ec-712320d6142b",
+				StartDate: utils.GetEmptyTime().AddDate(2026, 1, 0),
+				StopDate:  utils.GetEmptyTime().AddDate(2026, 2, 0),
+			},
+			err: nil,
+		},
+		{
+			Name:      "Success 2",
+			name:      "Yandex Plus",
+			userID:    "9654cfa5-abfd-4e58-b5ec-712320d6142b",
+			startDate: "01-2026",
+			stopDate:  "05-2026",
+			result: &subscriptions.SubscriptionStatDTO{
+				Name:      "Yandex Plus",
+				UserID:    "9654cfa5-abfd-4e58-b5ec-712320d6142b",
+				StartDate: utils.GetEmptyTime().AddDate(2026, 1, 0),
+				StopDate:  utils.GetEmptyTime().AddDate(2026, 5, 0),
+			},
+			err: nil,
+		},
+		{
+			Name:      "Success 3. Name miss",
+			name:      "",
+			userID:    "9654cfa5-abfd-4e58-b5ec-712320d6142b",
+			startDate: "01-2026",
+			stopDate:  "08-2026",
+			result: &subscriptions.SubscriptionStatDTO{
+				Name:      "",
+				UserID:    "9654cfa5-abfd-4e58-b5ec-712320d6142b",
+				StartDate: utils.GetEmptyTime().AddDate(2026, 1, 0),
+				StopDate:  utils.GetEmptyTime().AddDate(2026, 8, 0),
+			},
+			err: nil,
+		},
+		{
+			Name:      "Error. Interval invalid",
+			name:      "",
+			userID:    "9654cfa5-abfd-4e58-b5ec-712320d6142b",
+			startDate: "05-2026",
+			stopDate:  "01-2026",
+			result:    nil,
+			err:       SubscriptionIntervalErr,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.Name, func(t *testing.T) {
+			result, err := GetSubscriptionStatsDTO(tt.name, tt.userID, tt.startDate, tt.stopDate)
+			assert.Equal(t, tt.result, result)
+			assert.Equal(t, tt.err, err)
+		})
+	}
+}
+
+func TestGetSubscriptionUpdateDTO(t *testing.T) {
 	tests := []struct {
 		name   string
 		id     int
@@ -241,7 +314,7 @@ func TestSubscriptionUpdateValidation(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := SubscriptionUpdateValidation(tt.id, tt.req)
+			result, err := GetSubscriptionUpdateDTO(tt.id, tt.req)
 			assert.Equal(t, tt.result, result)
 			assert.Equal(t, tt.err, err)
 		})
