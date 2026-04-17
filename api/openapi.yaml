@@ -148,7 +148,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Объект не найден
-
     delete:
       tags: ["Подписки"]
       summary: Удалить запись о подписке
@@ -161,6 +160,54 @@ paths:
       responses:
         '200':
           description: Успешный ответ
+  /subscriptions/stats:
+    get:
+      tags: ["Подписки"]
+      summary: Статистика суммарной стоимости
+      parameters:
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "Yandex Plus"
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "60601fee-2bf1-4721-ae6f-7636e79a0cba"
+        - name: start_date
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "01-2026"
+        - name: stop_date
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "01-2026"
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: integer
+                    example: 3999
+                    description: Сумма
+        '400':
+          description: Ответ с ошибкой
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 
 components:
   schemas:
