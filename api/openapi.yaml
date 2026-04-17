@@ -40,7 +40,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscriptionResponse'
+                items:
+                  $ref: '#/components/schemas/Subscription'
         '400':
           description: Ответ с ошибкой
           content:
