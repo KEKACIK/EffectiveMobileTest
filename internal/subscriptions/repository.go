@@ -50,6 +50,7 @@ func (repo *repository) GetList(ctx context.Context, is_deleted bool) ([]Subscri
 			id, name, price, user_id, start_at, end_at
 		FROM subscriptions WHERE
 			is_deleted=$1
+		ORDER BY id ASC
 	`
 	repo.logger.DebugSQL(q)
 
@@ -97,7 +98,6 @@ func (repo *repository) Get(ctx context.Context, id int, is_deleted bool) (*Subs
 }
 
 func (repo *repository) Update(ctx context.Context, dto *SubscriptionUpdateDTO) (*Subscription, error) {
-
 	params := make([]string, 0)
 	args := make([]any, 0)
 	if dto.Name != "" {
@@ -155,6 +155,29 @@ func (repo *repository) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func (repo *repository) Sum(ctx context.Context, dto *SubscriptionStatDTO, is_deleted bool) (int, error) {
+	q := `
+		SELECT
+			SUM(price)
+		FROM subscriptions WHERE
+			user_id=$1 AND start_at >= $2 AND start_at < $3 AND is_deleted=$4
+	`
+	args := []any{dto.UserID, dto.StartDate, dto.StopDate, is_deleted}
+	if dto.Name != "" {
+		q += " AND name=$5"
+		args = append(args, dto.Name)
+	}
+	repo.logger.DebugSQL(q)
+
+	var sum int
+	err := repo.client.QueryRow(ctx, q, args...).Scan(&sum)
+	if err != nil {
+		return 0, err
+	}
+
+	return sum, nil
 }
 
 func NewRepository(

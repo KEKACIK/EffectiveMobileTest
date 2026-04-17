@@ -8,4 +8,5 @@ type Repository interface {
 	Get(ctx context.Context, id int, is_deleted bool) (*Subscription, error)
 	Update(ctx context.Context, dto *SubscriptionUpdateDTO) (*Subscription, error)
 	Delete(ctx context.Context, id int) error
+	Sum(ctx context.Context, dto *SubscriptionStatDTO, is_deleted bool) (int, error)
 }

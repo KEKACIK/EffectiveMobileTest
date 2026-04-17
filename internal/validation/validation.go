@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
@@ -85,13 +86,19 @@ var (
 func SubscriptionDateAtValidate(timeAt string) (time.Time, error) {
 	// Формат ввода времени "MM-YYYY" (01.2026)
 	timeAt = strings.TrimSpace(timeAt)
+	fmt.Println(timeAt)
 
 	timeAtSplit := strings.Split(timeAt, "-")
+	fmt.Println(timeAtSplit)
 	if len(timeAtSplit) != 2 {
 		return time.Time{}, SubscriptionDateAtErr
 	}
 
+	if utf8.RuneCountInString(timeAtSplit[0]) == 1 {
+		timeAtSplit[0] = fmt.Sprintf("0%s", timeAtSplit[0])
+	}
 	timeAtTime, err := time.Parse("2006-01", fmt.Sprintf("%s-%s", timeAtSplit[1], timeAtSplit[0]))
+
 	if err != nil {
 		return time.Time{}, SubscriptionDateAtErr
 	}

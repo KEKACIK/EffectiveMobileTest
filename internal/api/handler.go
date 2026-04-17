@@ -110,29 +110,6 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
 }
 
-func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	id, err := validation.SubscriptionIdValidate(r.PathValue("id"))
-	if err != nil {
-		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
-		ErrorResponse(w, http.StatusBadRequest, err)
-		return
-	}
-
-	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	sub, err := subRepo.Get(context.TODO(), id, false)
-	if err != nil {
-		ErrorNotFoundResponse(w)
-		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusNotFound)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(sub)
-	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
-}
-
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -199,6 +176,30 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{})
+}
+
+func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	query := r.URL.Query()
+
+	dto, err := GetSubscriptionStatsDTO(query.Get("name"), query.Get("user_id"), query.Get("start_date"), query.Get("stop_date"))
+	if err != nil {
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
+		ErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	subRepo := subscriptions.NewRepository(h.client, h.logger)
+	sum, err := subRepo.Sum(context.TODO(), dto, false)
+	if err != nil {
+		ErrorNotFoundResponse(w)
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]int{"summary": sum})
+	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
 }
 
 func NewHandler(
