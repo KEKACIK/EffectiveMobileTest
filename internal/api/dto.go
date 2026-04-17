@@ -10,6 +10,10 @@ import (
 
 var (
 	SubscriptionIntervalErr error = errors.New("Invalid validation: start_date is later than end_date")
+
+	SubscriptionListLimitNotNumberErr error = errors.New("Invalid validation Limit: Not number")
+
+	SubscriptionUpdateEmptyErr error = errors.New("Invalid validation Limit: Not number")
 )
 
 func GetSubscriptionCreateDTO(req *SubscriptionCreateRequest) ([]*subscriptions.SubscriptionCreateDTO, error) {
@@ -65,10 +69,6 @@ func GetSubscriptionCreateDTO(req *SubscriptionCreateRequest) ([]*subscriptions.
 	return dtoList, nil
 }
 
-var (
-	SubscriptionListLimitNotNumberErr error = errors.New("Invalid validation Limit: Not number")
-)
-
 func GetSubscriptionListDTO(page, limit string) (*SubscriptionListRequest, error) {
 	// page - не обязательный параметр, по умолчанию 1
 	req := SubscriptionListRequest{Page: 1}
@@ -119,10 +119,6 @@ func GetSubscriptionStatsDTO(name, userId, startDate, stopDate string) (*subscri
 
 	return dto, nil
 }
-
-var (
-	SubscriptionUpdateEmptyErr error = errors.New("Invalid validation Limit: Not number")
-)
 
 func GetSubscriptionUpdateDTO(id int, req *SubscriptionUpdateRequest) (*subscriptions.SubscriptionUpdateDTO, error) {
 	dto := &subscriptions.SubscriptionUpdateDTO{ID: id}

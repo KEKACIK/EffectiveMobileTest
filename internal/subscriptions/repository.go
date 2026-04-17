@@ -19,6 +19,16 @@ type repository struct {
 	logger *logging.Logger
 }
 
+func NewRepository(
+	client postgresql.Client,
+	logger *logging.Logger,
+) Repository {
+	return &repository{
+		client: client,
+		logger: logger,
+	}
+}
+
 func (repo *repository) Create(ctx context.Context, dto *SubscriptionCreateDTO) (*Subscription, error) {
 	q := `
 		INSERT INTO subscriptions
@@ -131,8 +141,6 @@ func (repo *repository) Update(ctx context.Context, dto *SubscriptionUpdateDTO) 
 		&sub.ID, &sub.Name, &sub.Price, &sub.UserID, &sub.StartAt, &sub.EndAt,
 	)
 	if err != nil {
-		repo.logger.Info(q)
-		repo.logger.Info(err.Error())
 		return nil, err
 	}
 
@@ -178,15 +186,4 @@ func (repo *repository) Sum(ctx context.Context, dto *SubscriptionStatDTO, is_de
 	}
 
 	return sum, nil
-}
-
-func NewRepository(
-	client postgresql.Client,
-	logger *logging.Logger,
-) Repository {
-
-	return &repository{
-		client: client,
-		logger: logger,
-	}
 }

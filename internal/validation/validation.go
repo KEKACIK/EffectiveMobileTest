@@ -14,6 +14,16 @@ import (
 var (
 	SubscriptionIDNotNumberErr      error = errors.New("Invalid validation id: Not number")
 	SubscriptionIDNegativeNumberErr error = errors.New("Invalid validation id: Negative number")
+
+	SubscriptionNameEmptyErr error = errors.New("Invalid validation name: Empty")
+
+	SubscriptionPriceNegativeErr error = errors.New("Invalid validation price: Negative number. Excepted price > 0")
+	SubscriptionPriceZeroErr     error = errors.New("Invalid validation price: Zero number. Excepted price > 0")
+
+	SubscriptionUserIdEmptyErr error = errors.New("Invalid validation user_id: Empty")
+	SubscriptionUserIdUUIDErr  error = errors.New("Invalid validation user_id: UUID invalid")
+
+	SubscriptionDateAtErr error = errors.New("Invalid validation: invalid Date. Excepted format \"MM-YYYY\"")
 )
 
 func SubscriptionIdValidate(id string) (int, error) {
@@ -31,10 +41,6 @@ func SubscriptionIdValidate(id string) (int, error) {
 	return idInt, nil
 }
 
-var (
-	SubscriptionNameEmptyErr error = errors.New("Invalid validation name: Empty")
-)
-
 func SubscriptionNameValidate(name string) (string, error) {
 	name = strings.TrimSpace(name)
 
@@ -44,11 +50,6 @@ func SubscriptionNameValidate(name string) (string, error) {
 
 	return name, nil
 }
-
-var (
-	SubscriptionPriceNegativeErr error = errors.New("Invalid validation price: Negative number. Excepted price > 0")
-	SubscriptionPriceZeroErr     error = errors.New("Invalid validation price: Zero number. Excepted price > 0")
-)
 
 func SubscriptionPriceValidate(price int) (int, error) {
 	if price < 0 {
@@ -60,11 +61,6 @@ func SubscriptionPriceValidate(price int) (int, error) {
 
 	return price, nil
 }
-
-var (
-	SubscriptionUserIdEmptyErr error = errors.New("Invalid validation user_id: Empty")
-	SubscriptionUserIdUUIDErr  error = errors.New("Invalid validation user_id: UUID invalid")
-)
 
 func SubscriptionUserIdValidate(userID string) (string, error) {
 	userID = strings.TrimSpace(userID)
@@ -78,10 +74,6 @@ func SubscriptionUserIdValidate(userID string) (string, error) {
 
 	return userID, nil
 }
-
-var (
-	SubscriptionDateAtErr error = errors.New("Invalid validation: invalid Date. Excepted format \"MM-YYYY\"")
-)
 
 func SubscriptionDateAtValidate(timeAt string) (time.Time, error) {
 	// Формат ввода времени "MM-YYYY" (01.2026)
