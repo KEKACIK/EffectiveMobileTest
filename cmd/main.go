@@ -24,5 +24,5 @@ func main() {
 	api.RegisterRoutes(mux, handler)
 
 	logger.Info("API listen :80")
-	http.ListenAndServe(":80", api.CorsMiddleware(mux))
+	http.ListenAndServe(":80", api.CorsMiddleware(mux, logger))
 }
