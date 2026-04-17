@@ -8,4 +8,5 @@ func RegisterRoutes(mux *http.ServeMux, h *Handler) {
 	mux.HandleFunc("GET /subscriptions/{id}", h.Get)
 	mux.HandleFunc("PUT /subscriptions/{id}", h.Update)
 	mux.HandleFunc("DELETE /subscriptions/{id}", h.Delete)
+	mux.HandleFunc("GET /subscriptions/stats", h.Stats)
 }

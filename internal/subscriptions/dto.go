@@ -10,6 +10,13 @@ type SubscriptionCreateDTO struct {
 	EndAt   time.Time `json:"end_date"`
 }
 
+type SubscriptionStatDTO struct {
+	Name      string `json:"name"`
+	UserID    string `json:"user_id"`
+	StartDate time.Time
+	StopDate  time.Time
+}
+
 type SubscriptionUpdateDTO struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`

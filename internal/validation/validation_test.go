@@ -206,7 +206,7 @@ func TestSubscriptionUserIdValidate(t *testing.T) {
 	}
 }
 
-func TestSubscriptionTimeAtValidate(t *testing.T) {
+func TestSubscriptionDateAtValidate(t *testing.T) {
 	tests := []struct {
 		name   string
 		value  string
@@ -235,19 +235,19 @@ func TestSubscriptionTimeAtValidate(t *testing.T) {
 			name:   "Error. Invalid date 1",
 			value:  "15-2026",
 			result: time.Time{},
-			err:    SubscriptionTimeAtErr,
+			err:    SubscriptionDateAtErr,
 		},
 		{
 			name:   "Error. Invalid date 2",
 			value:  "01.2026",
 			result: time.Time{},
-			err:    SubscriptionTimeAtErr,
+			err:    SubscriptionDateAtErr,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := SubscriptionTimeAtValidate(tt.value)
+			result, err := SubscriptionDateAtValidate(tt.value)
 			assert.Equal(t, tt.result, result)
 			assert.Equal(t, tt.err, err)
 		})

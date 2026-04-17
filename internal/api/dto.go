@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	SubscriptionCreateEndAtErr error = errors.New("Invalid validation: start_date is later than end_date")
+	SubscriptionIntervalErr error = errors.New("Invalid validation: start_date is later than end_date")
 )
 
-func SubscriptionCreateValidation(req *SubscriptionCreateRequest) ([]*subscriptions.SubscriptionCreateDTO, error) {
+func GetSubscriptionCreateDTO(req *SubscriptionCreateRequest) ([]*subscriptions.SubscriptionCreateDTO, error) {
 	months := make([]time.Time, 0)
 
 	name, err := validation.SubscriptionNameValidate(req.Name)
@@ -30,18 +30,18 @@ func SubscriptionCreateValidation(req *SubscriptionCreateRequest) ([]*subscripti
 		return nil, err
 	}
 
-	startAt, err := validation.SubscriptionTimeAtValidate(req.StartAt)
+	startAt, err := validation.SubscriptionDateAtValidate(req.StartAt)
 	if err != nil {
 		return nil, err
 	}
 
 	if req.EndAt != "" {
-		endAt, err := validation.SubscriptionTimeAtValidate(req.EndAt)
+		endAt, err := validation.SubscriptionDateAtValidate(req.EndAt)
 		if err != nil {
 			return nil, err
 		}
 		if !endAt.After(startAt) {
-			return nil, SubscriptionCreateEndAtErr
+			return nil, SubscriptionIntervalErr
 		}
 
 		for curr := startAt; curr.Before(endAt); curr = curr.AddDate(0, 1, 0) {
@@ -69,7 +69,7 @@ var (
 	SubscriptionListLimitNotNumberErr error = errors.New("Invalid validation Limit: Not number")
 )
 
-func SubscriptionListValidation(page, limit string) (*SubscriptionListRequest, error) {
+func GetSubscriptionListDTO(page, limit string) (*SubscriptionListRequest, error) {
 	// page - не обязательный параметр, по умолчанию 1
 	req := SubscriptionListRequest{Page: 1}
 
@@ -87,11 +87,44 @@ func SubscriptionListValidation(page, limit string) (*SubscriptionListRequest, e
 	return &req, nil
 }
 
+func GetSubscriptionStatsDTO(name, userId, startDate, stopDate string) (*subscriptions.SubscriptionStatDTO, error) {
+	var err error
+	dto := &subscriptions.SubscriptionStatDTO{}
+
+	if name != "" { // Необязательный параметр
+		dto.Name, err = validation.SubscriptionNameValidate(name)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	dto.UserID, err = validation.SubscriptionUserIdValidate(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	dto.StartDate, err = validation.SubscriptionDateAtValidate(startDate)
+	if err != nil {
+		return nil, err
+	}
+
+	dto.StopDate, err = validation.SubscriptionDateAtValidate(stopDate)
+	if err != nil {
+		return nil, err
+	}
+
+	if !dto.StopDate.After(dto.StartDate) {
+		return nil, SubscriptionIntervalErr
+	}
+
+	return dto, nil
+}
+
 var (
 	SubscriptionUpdateEmptyErr error = errors.New("Invalid validation Limit: Not number")
 )
 
-func SubscriptionUpdateValidation(id int, req *SubscriptionUpdateRequest) (*subscriptions.SubscriptionUpdateDTO, error) {
+func GetSubscriptionUpdateDTO(id int, req *SubscriptionUpdateRequest) (*subscriptions.SubscriptionUpdateDTO, error) {
 	dto := &subscriptions.SubscriptionUpdateDTO{ID: id}
 	var err error
 	is_empty := true

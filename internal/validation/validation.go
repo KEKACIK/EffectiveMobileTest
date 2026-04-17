@@ -79,21 +79,21 @@ func SubscriptionUserIdValidate(userID string) (string, error) {
 }
 
 var (
-	SubscriptionTimeAtErr error = errors.New("Invalid validation: invalid Date. Excepted format \"MM-YYYY\"")
+	SubscriptionDateAtErr error = errors.New("Invalid validation: invalid Date. Excepted format \"MM-YYYY\"")
 )
 
-func SubscriptionTimeAtValidate(timeAt string) (time.Time, error) {
+func SubscriptionDateAtValidate(timeAt string) (time.Time, error) {
 	// Формат ввода времени "MM-YYYY" (01.2026)
 	timeAt = strings.TrimSpace(timeAt)
 
 	timeAtSplit := strings.Split(timeAt, "-")
 	if len(timeAtSplit) != 2 {
-		return time.Time{}, SubscriptionTimeAtErr
+		return time.Time{}, SubscriptionDateAtErr
 	}
 
 	timeAtTime, err := time.Parse("2006-01", fmt.Sprintf("%s-%s", timeAtSplit[1], timeAtSplit[0]))
 	if err != nil {
-		return time.Time{}, SubscriptionTimeAtErr
+		return time.Time{}, SubscriptionDateAtErr
 	}
 
 	return timeAtTime, nil

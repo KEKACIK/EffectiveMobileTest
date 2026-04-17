@@ -30,7 +30,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dtoList, err := SubscriptionCreateValidation(&req)
+	dtoList, err := GetSubscriptionCreateDTO(&req)
 
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
@@ -61,7 +61,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	query := r.URL.Query()
-	req, err := SubscriptionListValidation(query.Get("page"), query.Get("limit"))
+	req, err := GetSubscriptionListDTO(query.Get("page"), query.Get("limit"))
 	if err != nil {
 		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
 		ErrorResponse(w, http.StatusBadRequest, err)
@@ -110,6 +110,29 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
 }
 
+func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	id, err := validation.SubscriptionIdValidate(r.PathValue("id"))
+	if err != nil {
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusBadRequest)
+		ErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	subRepo := subscriptions.NewRepository(h.client, h.logger)
+	sub, err := subRepo.Get(context.TODO(), id, false)
+	if err != nil {
+		ErrorNotFoundResponse(w)
+		debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(sub)
+	debug(h.logger, r.RequestURI, r.Method, r.Host, http.StatusOK)
+}
+
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -130,7 +153,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверяем данные
-	dto, err := SubscriptionUpdateValidation(id, &req)
+	dto, err := GetSubscriptionUpdateDTO(id, &req)
 	if err != nil {
 		if err == SubscriptionUpdateEmptyErr {
 			ErrorResponse(w, http.StatusNoContent, err)
