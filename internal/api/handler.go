@@ -48,7 +48,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	subList := make([]*subscriptions.Subscription, 0)
 	for _, dto := range dtoList {
-		sub, err := subRepo.Create(context.TODO(), dto)
+		sub, err := subRepo.Create(context.Background(), dto)
 		if err != nil {
 			SendErrorResponse(w, http.StatusBadRequest, err)
 
@@ -74,7 +74,7 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	subs, err := subRepo.GetList(context.TODO(), false)
+	subs, err := subRepo.GetList(context.Background(), false)
 	if err != nil {
 		SendErrorResponse(w, http.StatusBadRequest, err)
 
@@ -101,7 +101,7 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	sub, err := subRepo.Get(context.TODO(), id, false)
+	sub, err := subRepo.Get(context.Background(), id, false)
 	if err != nil {
 		SendErrorNotFoundResponse(w)
 		return
@@ -141,7 +141,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	sub, err := subRepo.Update(context.TODO(), dto)
+	sub, err := subRepo.Update(context.Background(), dto)
 	if err != nil {
 		SendErrorNotFoundResponse(w)
 		return
@@ -161,7 +161,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	err = subRepo.Delete(context.TODO(), id)
+	err = subRepo.Delete(context.Background(), id)
 	if err != nil {
 		SendErrorResponse(w, http.StatusBadRequest, err)
 		return
@@ -182,7 +182,7 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subRepo := subscriptions.NewRepository(h.client, h.logger)
-	sum, err := subRepo.Sum(context.TODO(), dto, false)
+	sum, err := subRepo.Sum(context.Background(), dto, false)
 	if err != nil {
 		SendErrorNotFoundResponse(w)
 		return

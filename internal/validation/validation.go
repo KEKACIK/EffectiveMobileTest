@@ -78,10 +78,8 @@ func SubscriptionUserIdValidate(userID string) (string, error) {
 func SubscriptionDateAtValidate(timeAt string) (time.Time, error) {
 	// Формат ввода времени "MM-YYYY" (01.2026)
 	timeAt = strings.TrimSpace(timeAt)
-	fmt.Println(timeAt)
 
 	timeAtSplit := strings.Split(timeAt, "-")
-	fmt.Println(timeAtSplit)
 	if len(timeAtSplit) != 2 {
 		return time.Time{}, SubscriptionDateAtErr
 	}

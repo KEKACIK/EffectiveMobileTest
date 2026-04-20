@@ -160,7 +160,7 @@ paths:
       responses:
         '200':
           description: Успешный ответ
-  /subscriptions/stats:
+  /subscriptions/sum:
     get:
       tags: ["Подписки"]
       summary: Статистика суммарной стоимости
